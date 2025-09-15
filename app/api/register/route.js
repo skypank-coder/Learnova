@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
-import path from "path";
-import fs from "fs/promises";
-
-const labelsPath = path.join(process.cwd(), "public", "labels.json");
+import { put } from "@vercel/blob";
+import { connectDb } from "@/lib/mongodb"; // your DB connection helper
 
 export async function POST(req) {
   try {
@@ -22,45 +20,45 @@ export async function POST(req) {
       );
     }
 
-    // Prepare user directory
-    const dir = path.join(process.cwd(), "public", "labels", name);
-    await fs.mkdir(dir, { recursive: true });
+    // Get DB
+    const db = await connectDb();
+    const users = db.collection("users");
 
-    // Determine next image number
-    let labels = [];
-    try {
-      const json = await fs.readFile(labelsPath, "utf8");
-      labels = JSON.parse(json).filter((u) => u && u.name);
-    } catch {}
-
-    let user = labels.find((u) => u.name === name);
-    if (!user) {
-      user = { name, rollNo, email, images: [] };
-      labels.push(user);
-    } else {
-      user.rollNo = rollNo;
-      user.email = email;
+    // Check if user already registered
+    const existingUser = await users.findOne({ rollNo });
+    if (existingUser) {
+      return NextResponse.json(
+        { success: false, error: "User already registered with a photo" },
+        { status: 409 } // conflict
+      );
     }
 
-    const nextImageNumber = user.images.length + 1;
-    const fileName = `${nextImageNumber}.jpg`;
-
-    // Save file
+    // Convert file to buffer
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
-    const filePath = path.join(dir, fileName);
-    await fs.writeFile(filePath, buffer);
 
-    // Update images array
-    user.images.push(fileName);
+    // Generate unique filename
+    const safeName = name.replace(/[^a-zA-Z0-9_-]/g, "_");
+    const fileName = `labels/${safeName}/1.jpg`;
 
-    // Save updated labels.json
-    await fs.writeFile(labelsPath, JSON.stringify(labels, null, 2));
+    // Upload to Vercel Blob
+    const blob = await put(fileName, buffer, {
+      contentType: file.type || "image/jpeg",
+      access: "public",
+    });
+
+    // Save user record in DB
+    const user = {
+      name,
+      rollNo,
+      email,
+      image: blob.url, // only one photo allowed
+    };
+    await users.insertOne(user);
 
     return NextResponse.json({
       success: true,
       message: "User registered successfully",
-      fileUrl: `/labels/${name}/${fileName}`,
       userData: user,
     });
   } catch (error) {

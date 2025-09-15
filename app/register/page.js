@@ -2,19 +2,20 @@
 import { useState } from "react";
 import { Home } from "lucide-react";
 import Link from "next/link";
+import { Navbar } from "@/components/Navbar";
 
 export default function RegisterPage() {
   const [name, setName] = useState("");
   const [rollNo, setRollNo] = useState("");
   const [email, setEmail] = useState("");
   const [photo, setPhoto] = useState(null);
-  const [fileUrl, setFileUrl] = useState(null);
+  const [registeredUser, setRegisteredUser] = useState(null);
   const [error, setError] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
-    setFileUrl(null);
+    setRegisteredUser(null);
 
     const formData = new FormData();
     formData.append("name", name);
@@ -30,7 +31,7 @@ export default function RegisterPage() {
 
       const data = await res.json();
       if (data.success) {
-        setFileUrl(data.fileUrl);
+        setRegisteredUser(data.userData); // full user object
         setName("");
         setRollNo("");
         setEmail("");
@@ -44,14 +45,11 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-start bg-gradient-to-r p-5 relative min-h-screen">
-      {/* Home Button */}
-      <Link href="/">
-        <button className=" p-2 bg-blue-600 text-white rounded-full shadow hover:bg-blue-700 transition-colors">
-          <Home className="w-5 h-5" />
-        </button>
-      </Link>
-
+    <div className="flex flex-col min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      {/* Navbar */}
+      <Navbar />
+      <main className="flex-1 flex items-center justify-center px-4 py-12">
+        
       <div className="w-full max-w-5xl mt-12 flex flex-col md:flex-row bg-white rounded-2xl shadow-xl p-8 gap-8">
         {/* Form */}
         <div className="flex-1">
@@ -99,7 +97,7 @@ export default function RegisterPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 className="border border-gray-300 p-3 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+                />
             </div>
 
             <div>
@@ -112,7 +110,7 @@ export default function RegisterPage() {
                 onChange={(e) => setPhoto(e.target.files[0])}
                 required
                 className="w-full"
-              />
+                />
             </div>
 
             <button
@@ -130,28 +128,39 @@ export default function RegisterPage() {
           )}
         </div>
 
-        {/* Uploaded Image */}
-        {fileUrl && (
+        {/* Registered User Card */}
+        {registeredUser && (
           <div className="flex-1 flex flex-col items-center justify-start">
-            <p className="text-green-600 font-semibold text-center mb-2">
-              Registration Successful!
+            <p className="text-green-600 font-semibold text-center mb-4">
+              ✅ Registration Successful!
             </p>
-            <a
-              href={fileUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-block px-4 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 transition-colors mb-4"
-            >
-              View Uploaded Photo
-            </a>
-            <img
-              src={fileUrl}
-              alt="Uploaded"
-              className="w-full max-w-sm rounded-lg shadow"
-            />
+
+            <div className="bg-gray-50 rounded-xl p-4 shadow w-full max-w-sm">
+              <div className="space-y-2 text-center">
+                <p>
+                  <span className="font-medium">Name:</span>{" "}
+                  {registeredUser.name}
+                </p>
+                <p>
+                  <span className="font-medium">Roll No:</span>{" "}
+                  {registeredUser.rollNo}
+                </p>
+                <p>
+                  <span className="font-medium">Email:</span>{" "}
+                  {registeredUser.email}
+                </p>
+              </div>
+
+              <img
+                src={registeredUser.image}
+                alt={`${registeredUser.name}'s photo`}
+                className="mt-4 w-full rounded-lg shadow"
+              />
+            </div>
           </div>
         )}
       </div>
+        </main>
     </div>
   );
 }

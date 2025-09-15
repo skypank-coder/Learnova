@@ -10,13 +10,13 @@ export default function useLabels() {
   useEffect(() => {
     const fetchLabels = async () => {
       try {
-        const res = await fetch("/labels.json");
+        const res = await fetch("/api/labels");
         if (!res.ok) throw new Error("Failed to fetch labels");
         const data = await res.json();
         setLabels(data);
       } catch (err) {
         console.error(err);
-        setError(err);
+        setError(err.message);
       } finally {
         setLoading(false);
       }
