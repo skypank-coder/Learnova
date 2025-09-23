@@ -445,6 +445,8 @@ export function Navbar() {
                     <Image
                       src={getUserPhoto()}
                       alt="Profile"
+                      width={150}
+                      height={150}
                       className="w-14 h-14 rounded-full border-2 border-accent/50 object-cover shadow-lg"
                     />
                   ) : (
