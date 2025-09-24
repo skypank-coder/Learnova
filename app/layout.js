@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { Suspense } from "react";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
+import LearnovaChatbot from "@/components/ChatBot";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -224,7 +225,13 @@ export default function RootLayout({ children }) {
         className={`font-sans ${geistSans.variable} ${geistMono.variable} antialiased text-white bg-slate-950 min-h-screen`}
       >
         <AuthProvider>
-          <Suspense fallback={null}>{children}</Suspense>
+          <Suspense fallback={null}>
+            {children}
+            {/* Chatbot injected globally */}
+            <div className="z-50">
+              <LearnovaChatbot />
+            </div>
+          </Suspense>
         </AuthProvider>
       </body>
     </html>

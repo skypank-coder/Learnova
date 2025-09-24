@@ -292,9 +292,6 @@ export default function AboutPage() {
 
       <div className="min-h-screen relative z-50">
         <Navbar />
-        <div className="z-50">
-        <LearnovaChatbot/>
-        </div>
 
         {/* Hero Section */}
         <section className="pt-32 pb-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
