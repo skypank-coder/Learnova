@@ -19,7 +19,6 @@ export const initializeUserStats = async (userId) => {
 
   try {
     await setDoc(statsRef, defaultStats);
-    console.log("Stats initialized for user:", userId);
   } catch (error) {
     console.error("Error initializing stats:", error);
   }
@@ -39,7 +38,6 @@ export const updateUserStat = async (userId, statField, value = 1) => {
     const statsSnap = await getDoc(statsRef);
     
     if (!statsSnap.exists()) {
-      // If doc doesn't exist for some reason, create it first
       await initializeUserStats(userId);
     }
 
@@ -47,7 +45,6 @@ export const updateUserStat = async (userId, statField, value = 1) => {
       [statField]: increment(value),
       lastUpdated: new Date()
     });
-    console.log(`Updated ${statField} for user:`, userId);
   } catch (error) {
     console.error(`Error updating ${statField}:`, error);
   }

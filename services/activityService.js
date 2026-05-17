@@ -11,18 +11,14 @@ export const logActivity = async (userId, activityData) => {
     if (!userId) return;
 
     try {
-        // Add a new document to the "activities" collection
         await addDoc(collection(db, "activities"), {
             userId,
             title: activityData.title,
             type: activityData.type || "course",
             progress: activityData.progress || 0,
-            timestamp: serverTimestamp(), // Record when the activity happened
+            timestamp: serverTimestamp(),
         });
-        console.log("Activity logged successfully!");
     } catch (error) {
         console.error("Error logging activity to Firestore:", error);
     }
 };
-
-
