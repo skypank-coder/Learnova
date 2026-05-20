@@ -26,6 +26,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/Navbar";
+import { useRouter } from "next/navigation";
 
 import { useAuth } from "@/hooks/useAuth";
 import { logActivity } from "@/services/activityService";
@@ -46,6 +47,7 @@ const Reveal = ({ children, className = "", delay = 0, y = 28 }) => (
 
 export default function ActivityPage() {
   const { user } = useAuth();
+  const router = useRouter();
   const [scrollY, setScrollY] = useState(0);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -225,7 +227,7 @@ export default function ActivityPage() {
 
   const handleStartActivity = async (activity) => {
     if (!user) {
-      alert("Please log in to track your learning progress!");
+      router.push("/auth");
       return;
     }
 
