@@ -22,26 +22,36 @@ export async function POST(request) {
       return jsonError("Groq API key is not configured", 500);
     }
 
-    const response = await fetch(GROQ_API_URL, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "llama-3.1-8b-instant",
-        messages: [
-          {
-            role: "system",
-            content:
-              "You are Nova, the friendly AI assistant for Learnova - a Smart Student Engagement Ecosystem. You help with questions about attendance automation, smart activities, security features, analytics, and educational technology. Always be helpful, informative, and encouraging. Keep responses concise but comprehensive.",
-          },
-          { role: "user", content: trimmedMessage },
-        ],
-        max_tokens: 400,
-        temperature: 0.7,
-      }),
-    });
+    const timeoutMs = parseInt(process.env.GROQ_TIMEOUT || "30000", 10) || 30000;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+    let response;
+    try {
+      response = await fetch(GROQ_API_URL, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        signal: controller.signal,
+        body: JSON.stringify({
+          model: "llama-3.1-8b-instant",
+          messages: [
+            {
+              role: "system",
+              content:
+                "You are Nova, the friendly AI assistant for Learnova - a Smart Student Engagement Ecosystem. You help with questions about attendance automation, smart activities, security features, analytics, and educational technology. Always be helpful, informative, and encouraging. Keep responses concise but comprehensive.",
+            },
+            { role: "user", content: trimmedMessage },
+          ],
+          max_tokens: 400,
+          temperature: 0.7,
+        }),
+      });
+    } finally {
+      clearTimeout(timeoutId);
+    }
 
     if (!response.ok) {
       const errorBody = await response.json().catch(() => ({}));
@@ -60,6 +70,10 @@ export async function POST(request) {
 
     return jsonSuccess({ message: content });
   } catch (error) {
+    if (error.name === "AbortError") {
+      console.error("Groq API request timed out:", error);
+      return jsonError("Gateway Timeout: Groq did not respond in time.", 504);
+    }
     console.error("Groq API route error:", error);
     return jsonError("Internal server error", 500);
   }
