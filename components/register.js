@@ -8,6 +8,7 @@ import { Upload, User, Mail, Hash, Sparkles, CheckCircle } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { useAuth } from "@/hooks/useAuth";
 import NextImage from "next/image";
+import { validateRequired, validateName } from "@/utils/formValidation";
 
 export default function RegisterPage() {
   useEffect(() => {
@@ -35,6 +36,26 @@ export default function RegisterPage() {
     e.preventDefault();
     setError(null);
     setRegisteredUser(null);
+
+    // Validate using centralized form validators
+    const nameValidation = validateName(name, "Full Name");
+    if (nameValidation !== true) {
+      setError(nameValidation);
+      return;
+    }
+
+    const rollNoValidation = validateRequired(rollNo, "Roll Number");
+    if (rollNoValidation !== true) {
+      setError(rollNoValidation);
+      return;
+    }
+
+    const photoValidation = validateRequired(photo, "Profile Photo");
+    if (photoValidation !== true) {
+      setError(photoValidation);
+      return;
+    }
+
     setIsLoading(true);
 
     const formData = new FormData();

@@ -2,6 +2,12 @@ import { doc, setDoc } from "firebase/firestore";
 import { db } from "@/lib/firebaseConfig";
 import { USER_ROLES } from "@/constants/userRoles";
 import { initializeUserStats } from "@/services/statsService";
+import {
+  validateRequired,
+  validateEmail,
+  validatePassword,
+  validateName,
+} from "./formValidation";
 
 export const PASSWORD_REQUIREMENTS_MESSAGE =
   "Password must contain at least 8 characters, including uppercase, lowercase, number, and special character.";
@@ -113,29 +119,27 @@ export const validateForm = (formData, isLogin) => {
     errors.role = "Please select your role";
   }
 
-  if (!email) {
-    errors.email = "Email is required";
-  } else if (!/\S+@\S+\.\S+/.test(email)) {
-    errors.email = "Please enter a valid email";
+  const emailValidation = validateEmail(email);
+  if (emailValidation !== true) {
+    errors.email = emailValidation;
   }
 
-  if (!password) {
-    errors.password = "Password is required";
-  } else if (!isLogin) {
-    const passwordRegex =
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
-    if (!passwordRegex.test(password)) {
-      errors.password = PASSWORD_REQUIREMENTS_MESSAGE;
-    }
+  const passwordValidation = isLogin ? validateRequired(password, "Password") : validatePassword(password);
+  if (passwordValidation !== true) {
+    errors.password = passwordValidation;
   }
 
   if (!isLogin) {
-    if (!fullName?.trim()) {
-      errors.fullName = "Full name is required";
+    const fullNameValidation = validateName(fullName, "Full name");
+    if (fullNameValidation !== true) {
+      errors.fullName = fullNameValidation;
     }
 
-    if (selectedRole === USER_ROLES.INSTITUTE && !instituteName?.trim()) {
-      errors.instituteName = "Institute name is required";
+    if (selectedRole === USER_ROLES.INSTITUTE) {
+      const instituteNameValidation = validateRequired(instituteName, "Institute name");
+      if (instituteNameValidation !== true) {
+        errors.instituteName = instituteNameValidation;
+      }
     }
   }
 
