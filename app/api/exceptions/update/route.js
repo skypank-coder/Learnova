@@ -8,11 +8,20 @@ export async function PUT(request) {
     const authorization = request.headers.get("authorization");
     const token = authorization?.split(" ")[1];
 
-    const decodedToken = await verifyFirebaseToken(token);
+    const authResult = await verifyFirebaseToken(token);
 
-    if (!decodedToken) {
-      return jsonError("Unauthorized", 401);
+    if (!authResult.valid) {
+      return NextResponse.json(
+        {
+          error: "Unauthorized",
+          reason: authResult.reason,
+        },
+        { status: 401 }
+      );
     }
+
+    const decodedToken = authResult.decodedToken;
+
 
     // Fetch user profile from Firestore to get the user's role
     const profile = await getUserProfile(decodedToken.uid);

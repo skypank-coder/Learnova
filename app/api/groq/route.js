@@ -19,11 +19,20 @@ export async function POST(request) {
     const authorization = request.headers.get("authorization");
     const token = authorization?.split(" ")[1];
 
-    const decodedToken = await verifyFirebaseToken(token);
+    const authResult = await verifyFirebaseToken(token);
 
-    if (!decodedToken) {
-      return jsonError("Unauthorized", 401);
+    if (!authResult.valid) {
+      return NextResponse.json(
+        {
+          error: "Unauthorized",
+          reason: authResult.reason,
+        },
+        { status: 401 }
+      );
     }
+
+    const decodedToken = authResult.decodedToken;
+
 
     // Rate limiting per authenticated user (persisted across cold starts)
     const rateLimit = await checkRateLimit(decodedToken.uid);
