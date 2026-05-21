@@ -84,7 +84,8 @@ export async function POST(req) {
     }
 
     // Rate Limiting Check
-    const ip = req.headers.get("x-forwarded-for") || "127.0.0.1";
+    const forwardedFor = req.headers.get("x-forwarded-for");
+    const ip = forwardedFor ? forwardedFor.split(',')[0].trim() : "127.0.0.1";
     const now = Date.now();
     if (!rateLimitMap.has(ip)) {
       rateLimitMap.set(ip, []);
