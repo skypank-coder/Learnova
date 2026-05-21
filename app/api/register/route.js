@@ -43,7 +43,7 @@ export async function POST(req) {
     }
 
     if (file.size > MAX_FILE_SIZE) {
-      return jsonError("File size exceeds 5MB limit", 400);
+      return jsonError("File too large. Max size is 5MB.", 413);
     }
 
     if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
