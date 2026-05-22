@@ -117,6 +117,6 @@ export async function POST(req) {
     );
   } catch (error) {
     console.error(error);
-    return jsonError(error.message || "Internal server error", 500);
+    return jsonError("Internal server error", 500);
   }
 }

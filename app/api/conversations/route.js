@@ -88,7 +88,7 @@ export async function POST(req) {
     return jsonSuccess(newConversation);
   } catch (err) {
     console.error("Save Message Error:", err);
-    return jsonError(err.message || "Failed to save conversation", 500);
+    return jsonError("Failed to save conversation", 500);
   }
 }
 
@@ -121,7 +121,7 @@ export async function GET(request) {
     return jsonSuccess(history);
   } catch (err) {
     console.error("Get History Error:", err);
-    return jsonError(err.message || "Failed to retrieve conversation history", 500);
+    return jsonError("Failed to retrieve conversation history", 500);
   }
 }
 
