@@ -77,8 +77,9 @@ const StudentDashboard = () => {
 
       const isWeekday = day >= 1 && day <= 5;
       const isAttendanceTime = hour === 9 && minute <= 10;
+      const newIsAttendance = isWeekday && isAttendanceTime;
 
-      setIsAttendanceWindow(isWeekday && isAttendanceTime);
+      setIsAttendanceWindow((prev) => (prev !== newIsAttendance ? newIsAttendance : prev));
 
       const dayNames = [
         "Sunday",

@@ -163,11 +163,12 @@ setEmailSuggestion(null);
 
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-2">
-                  <label className="flex items-center gap-2 text-slate-200 font-medium">
+                  <label htmlFor="fullName" className="flex items-center gap-2 text-slate-200 font-medium">
                     <User className="w-4 h-4 text-purple-400" />
                     Full Name
                   </label>
                   <input
+                    id="fullName"
                     type="text"
                     placeholder="Enter your full name"
                     value={name}
@@ -178,11 +179,12 @@ setEmailSuggestion(null);
                 </div>
 
                 <div className="space-y-2">
-                  <label className="flex items-center gap-2 text-slate-200 font-medium">
+                  <label htmlFor="rollNumber" className="flex items-center gap-2 text-slate-200 font-medium">
                     <Hash className="w-4 h-4 text-blue-400" />
                     Roll Number
                   </label>
                   <input
+                    id="rollNumber"
                     type="text"
                     placeholder="Enter your roll number"
                     value={rollNo}
@@ -194,11 +196,12 @@ setEmailSuggestion(null);
 
                 {/* Email (auto from auth, read-only) */}
                 <div className="space-y-2">
-                  <label className="flex items-center gap-2 text-slate-200 font-medium">
+                  <label htmlFor="emailAddress" className="flex items-center gap-2 text-slate-200 font-medium">
                     <Mail className="w-4 h-4 text-pink-400" />
                     Email Address
                   </label>
                   <input
+                    id="emailAddress"
                     type="email"
                     value={email}
                     readOnly // ✅ user cannot change
@@ -207,12 +210,13 @@ setEmailSuggestion(null);
                 </div>
 
                 <div className="space-y-2">
-                  <label className="flex items-center gap-2 text-slate-200 font-medium">
+                  <label htmlFor="profilePhoto" className="flex items-center gap-2 text-slate-200 font-medium">
                     <Upload className="w-4 h-4 text-green-400" />
                     Profile Photo
                   </label>
                   <div className="relative">
                     <input
+                      id="profilePhoto"
                       type="file"
                       accept="image/*"
                       onChange={(e) => setPhoto(e.target.files?.[0] || null)}

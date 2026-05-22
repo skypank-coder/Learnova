@@ -1,12 +1,13 @@
 import { connectDb } from "@/lib/mongodb";
 import { verifyFirebaseToken } from "@/lib/firebase-admin";
 import { jsonError, jsonSuccess } from "@/lib/api-response";
+import { NextResponse } from "next/server";
 import { z } from "zod";
+import xss from "xss";
 
 const sanitizeText = (text) => {
   if (typeof text !== "string") return "";
-  // Strip <script> tags to prevent XSS injection
-  return text.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "").trim();
+  return xss(text).trim();
 };
 
 const conversationSchema = z.object({
@@ -32,11 +33,17 @@ export async function POST(req) {
     const authorization = req.headers.get("authorization");
     const token = authorization?.split(" ")[1];
 
-    const decodedToken = await verifyFirebaseToken(token);
+    const authResult = await verifyFirebaseToken(token);
 
-    if (!decodedToken) {
-      return jsonError("Unauthorized", 401);
+    if (!authResult.valid) {
+      return jsonError(
+        { message: "Unauthorized", reason: authResult.reason },
+        401
+      );
     }
+
+    const decodedToken = authResult.decodedToken;
+
 
     // Enforce maximum document size (1MB = 1048576 bytes)
     const contentLength = req.headers.get("content-length");
@@ -90,11 +97,17 @@ export async function GET(request) {
     const authorization = request.headers.get("authorization");
     const token = authorization?.split(" ")[1];
 
-    const decodedToken = await verifyFirebaseToken(token);
+    const authResult = await verifyFirebaseToken(token);
 
-    if (!decodedToken) {
-      return jsonError("Unauthorized", 401);
+    if (!authResult.valid) {
+      return jsonError(
+        { message: "Unauthorized", reason: authResult.reason },
+        401
+      );
     }
+
+    const decodedToken = authResult.decodedToken;
+
 
     const db = await connectDb();
     const collection = db.collection("conversations");

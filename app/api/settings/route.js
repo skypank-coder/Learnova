@@ -1,6 +1,6 @@
-import { NextResponse } from "next/server";
 import { connectDb } from "@/lib/mongodb";
 import { verifyFirebaseToken, getUserProfile } from "@/lib/firebase-admin";
+import { jsonError, jsonSuccess } from "@/lib/api-response";
 import { z } from "zod";
 
 const settingsSchema = z.object({
@@ -78,23 +78,17 @@ export async function PATCH(request) {
     const authorization = request.headers.get("authorization");
     const token = authorization?.split(" ")[1];
 
-    const decodedToken = await verifyFirebaseToken(token);
+   const authResult = await verifyFirebaseToken(token);
 
     if (!decodedToken) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return jsonError("Unauthorized", 401);
     }
 
     const body = await request.json();
     const parsed = settingsSchema.safeParse(body);
 
     if (!parsed.success) {
-      return NextResponse.json(
-        { error: "Bad Request: Unrecognized or invalid fields." },
-        { status: 400 }
-      );
+      return jsonError("Bad Request: Unrecognized or invalid fields.", 400);
     }
 
     const { userId: bodyUserId, ...settings } = parsed.data;
@@ -105,10 +99,7 @@ export async function PATCH(request) {
     if (bodyUserId && bodyUserId !== decodedToken.uid) {
       const profile = await getUserProfile(decodedToken.uid);
       if (!profile || profile.role !== "admin") {
-        return NextResponse.json(
-          { error: "Forbidden: You are not authorized to update another user's settings." },
-          { status: 403 }
-        );
+        return jsonError("Forbidden: You are not authorized to update another user's settings.", 403);
       }
       targetUserId = bodyUserId;
       isOperatorAdmin = true;
@@ -122,19 +113,10 @@ export async function PATCH(request) {
       { upsert: true }
     );
 
-    console.log(
-      `[Audit Log] Settings updated successfully for target user: ${targetUserId} by operator: ${decodedToken.uid} (Role: ${isOperatorAdmin ? "admin" : "owner"})`
-    );
 
-    return NextResponse.json(
-      { message: "Settings saved successfully" },
-      { status: 200 }
-    );
+    return jsonSuccess({ message: "Settings saved successfully" }, 200);
   } catch (error) {
     console.error("Settings save error:", error);
-    return NextResponse.json(
-      { error: "Failed to save settings" },
-      { status: 500 }
-    );
+    return jsonError("Failed to save settings", 500);
   }
 }

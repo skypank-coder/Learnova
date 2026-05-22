@@ -1,3 +1,4 @@
+import { NextResponse } from "next/server";
 import { connectDb } from "@/lib/mongodb";
 import { verifyFirebaseToken, getUserProfile } from "@/lib/firebase-admin";
 import { jsonError, jsonSuccess } from "@/lib/api-response";
@@ -7,11 +8,19 @@ export async function GET(request) {
     const authorization = request.headers.get("authorization");
     const token = authorization?.split(" ")[1];
 
-    const decodedToken = await verifyFirebaseToken(token);
+    const authResult = await verifyFirebaseToken(token);
 
-    if (!decodedToken) {
-      return jsonError("Unauthorized", 401);
+    if (!authResult.valid) {
+      return NextResponse.json(
+        {
+          error: "Unauthorized",
+          reason: authResult.reason,
+        },
+        { status: 401 }
+      );
     }
+
+    const decodedToken = authResult.decodedToken;
 
     const profile = await getUserProfile(decodedToken.uid);
 
@@ -21,37 +30,37 @@ export async function GET(request) {
 
     const { searchParams } = new URL(request.url);
 
-    // Pagination params
-    const page = parseInt(searchParams.get("page")) || 1;
-    const limit = parseInt(searchParams.get("limit")) || 10;
+    // Pagination
+    const page = Math.max(
+      1,
+      parseInt(searchParams.get("page") || "1", 10)
+    );
 
-    // Search params
-    const search = searchParams.get("search") || "";
-
-    // Sorting params
-    const sortBy = searchParams.get("sortBy") || "createdAt";
-    const sortOrder =
-      searchParams.get("sortOrder") === "asc" ? 1 : -1;
-
-    // Validation
-    if (page < 1 || limit < 1) {
-      return jsonError(
-        "Page and limit must be greater than 0",
-        400
-      );
-    }
+    const limit = Math.min(
+      100,
+      Math.max(1, parseInt(searchParams.get("limit") || "10", 10))
+    );
 
     const skip = (page - 1) * limit;
+
+    // Search
+    const search = searchParams.get("search") || "";
+
+    // Sorting
+    const sortBy = searchParams.get("sortBy") || "createdAt";
+
+    const sortOrder =
+      searchParams.get("sortOrder") === "asc" ? 1 : -1;
 
     const db = await connectDb();
     const collection = db.collection("exceptions");
 
     // Base query
-    let query = {
+    const query = {
       status: "pending",
     };
 
-    // Student restriction
+    // Role-based filtering
     if (profile.role === "student") {
       query.studentEmail = decodedToken.email;
     } else if (
@@ -82,7 +91,7 @@ export async function GET(request) {
     // Total count
     const total = await collection.countDocuments(query);
 
-    // Fetch paginated data
+    // Fetch data
     const exceptions = await collection
       .find(query)
       .sort({ [sortBy]: sortOrder })
@@ -92,19 +101,16 @@ export async function GET(request) {
 
     const totalPages = Math.ceil(total / limit);
 
-    return jsonSuccess(
-      {
-        exceptions,
-        pagination: {
-          total,
-          page,
-          limit,
-          totalPages,
-          hasNextPage: page < totalPages,
-        },
+    return jsonSuccess({
+      exceptions,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages,
+        hasNextPage: page < totalPages,
       },
-      200
-    );
+    });
   } catch (error) {
     console.error("Exception fetch error:", error);
     return jsonError("Internal server error", 500);

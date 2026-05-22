@@ -38,10 +38,16 @@ export async function POST(req) {
       return jsonError("Unauthorized: No token provided", 401);
     }
 
-    const decodedToken = await verifyFirebaseToken(token);
-    if (!decodedToken) {
-      return jsonError("Unauthorized: Invalid token", 401);
+    const authResult = await verifyFirebaseToken(token);
+
+    if (!authResult.valid) {
+      return jsonError(
+        { message: "Unauthorized", reason: authResult.reason },
+        401
+      );
     }
+
+    const decodedToken = authResult.decodedToken;
 
     const formData = await req.formData();
     const name = normalizeText(formData.get("name"));
