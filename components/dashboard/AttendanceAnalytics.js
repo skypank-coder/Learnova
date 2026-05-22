@@ -18,7 +18,7 @@ import {
   Legend,
   Filler,
 } from "chart.js";
-import { getWeekdaysSinceYearStart } from "@/services/statsService";
+import { getWeekdaysSince } from "@/services/statsService";
 
 ChartJS.register(
   CategoryScale,
@@ -113,7 +113,7 @@ const AttendanceAnalytics = ({ userId, recentActivity = [] }) => {
         const snapshot = await getDocs(attendanceQuery);
         const records = snapshot.docs.map((doc) => doc.data() || {});
         const totalPresent = records.length;
-        const totalClasses = getWeekdaysSinceYearStart();
+        const totalClasses = getWeekdaysSince();
 
         const safeTotalClasses = totalClasses > 0 ? totalClasses : 1;
         let totalAbsent = safeTotalClasses - totalPresent;
