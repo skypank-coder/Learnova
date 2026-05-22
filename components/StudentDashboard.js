@@ -41,6 +41,10 @@ const AttendanceHeatmap = dynamic(
     loading: () => <ChartSkeleton variant="heatmap" />,
   }
 );
+import AttendanceAnalytics from "./dashboard/AttendanceAnalytics";
+import StreakCounter from "./gamification/StreakCounter";
+import XpProgressBar from "./gamification/XpProgressBar";
+import BadgeGallery from "./gamification/BadgeGallery";
 
 const StudentDashboard = () => {
   const { user } = useAuth();
@@ -52,15 +56,29 @@ const StudentDashboard = () => {
   const [recentActivity, setRecentActivity] = useState([]);
   const [upcomingClass, setUpcomingClass] = useState(null);
   const [isAttendanceWindow, setIsAttendanceWindow] = useState(false);
+  const [gamificationData, setGamificationData] = useState(null);
 
-  // Mock attendance stats
-  const attendanceStats = {
-    present: 18,
-    absent: 2,
-    late: 1,
-    percentage: 90,
-  };
+  useEffect(() => {
+    const fetchGamification = async () => {
+      try {
+        const token = await user.getIdToken();
+        const res = await fetch("/api/student/gamification", {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setGamificationData(data);
+        }
+      } catch (err) {
+        console.error("Failed to load gamification data", err);
+      }
+    };
+    if (user) {
+      fetchGamification();
+    }
+  }, [user]);
 
+  // Mock schedule data is now imported from @/constants/mockData
   useEffect(() => {
     const loadingTimer = setTimeout(() => {
       setLoading(false);
@@ -631,7 +649,7 @@ const StudentDashboard = () => {
         }
       `}</style>
     </div>
-  );
+  );  
 };
 
 const StatCard = ({ color, label, value }) => {
@@ -649,14 +667,27 @@ const StatCard = ({ color, label, value }) => {
   const style = styles[color].split(" ");
 
   return (
-    <div
-      className={`bg-gradient-to-br ${style[0]} ${style[1]} rounded-xl p-4 border ${style[2]}`}
-    >
-      <div className={`text-2xl font-bold ${style[3]}`}>
-        {value}
-      </div>
+    <div className="flex flex-col gap-6 p-4 md:p-6 w-full max-w-7xl mx-auto min-h-screen">
+      {/* Gamification Section */}
+      {gamificationData && (
+        <div className="flex flex-col lg:flex-row gap-6 mb-4">
+          <div className="flex flex-col gap-6 flex-1">
+            <div className="flex gap-4 items-center">
+              <StreakCounter currentStreak={gamificationData.currentStreak} />
+              <div className="flex-1">
+                <XpProgressBar 
+                  currentLevel={gamificationData.currentLevel} 
+                  currentXp={gamificationData.totalXp} 
+                />
+              </div>
+            </div>
+            <BadgeGallery unlockedBadges={gamificationData.unlockedBadges} />
+          </div>
+        </div>
+      )}
 
-      <div className={`${style[4]} text-sm`}>{label}</div>
+      {user && user.uid && <AttendanceAnalytics userId={user.uid} />}
+      {/* KEEP YOUR ENTIRE EXISTING JSX HERE EXACTLY SAME */}
     </div>
   );
 };

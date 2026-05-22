@@ -230,10 +230,55 @@ export default function AuthForm({
             {errors.password && (
               <p className="text-red-400 text-sm mt-1">{errors.password}</p>
             )}
+            {!isLogin && password && (
+              <div className="mt-3 space-y-2">
+                <div className="h-1.5 w-full bg-gray-700 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full ${passwordStrength.barClass} ${passwordStrength.widthClass} transition-all duration-500`}
+                  />
+                </div>
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-gray-400">Password Strength:</span>
+                  <span className={`font-semibold ${passwordStrength.textClass}`}>
+                    {passwordStrength.label}
+                  </span>
+                </div>
+              </div>
+            )}
             {!isLogin && !errors.password && (
               <p className="text-gray-400 text-xs mt-1">
                 Min 8 characters with upper, lower, number, and special character.
               </p>
+            )}
+            {!isLogin && (
+              <div className="mt-3 space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-gray-400 font-medium">Password Strength</span>
+                  <span
+                    data-testid="password-strength-label"
+                    className={`font-semibold transition-colors duration-300 ${
+                      password.length > 0 ? passwordStrength.textClass : "text-gray-500"
+                    }`}
+                  >
+                    {password.length > 0 ? passwordStrength.label : "None"}
+                  </span>
+                </div>
+                <div className="grid grid-cols-4 gap-1.5 h-1.5 w-full bg-gray-700/30 rounded-full overflow-hidden">
+                  {[0, 1, 2, 3].map((index) => {
+                    const activeSegments = password.length > 0 ? Math.min(passwordStrength.score + 1, 4) : 0;
+                    const isFilled = index < activeSegments;
+                    return (
+                      <div
+                        key={index}
+                        data-testid={`password-strength-bar-${index}`}
+                        className={`h-full rounded-full transition-all duration-500 ease-out ${
+                          isFilled ? passwordStrength.barClass : "bg-gray-700/50"
+                        }`}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
             )}
           </div>
 
@@ -281,6 +326,7 @@ export default function AuthForm({
           </div>
 
           <button
+            type="button"
             onClick={onGoogleLogin}
             disabled={isLoading}
             className="mt-4 w-full bg-muted border border-border text-foreground py-3 px-4 rounded-xl font-medium hover:bg-muted/80 focus:ring-4 focus:ring-gray-500/25 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"

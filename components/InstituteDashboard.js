@@ -52,6 +52,7 @@ const AttendanceTrendsChart = dynamic(
 );
 
 const InstituteDashboard = () => {
+  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
   const [selectedClass, setSelectedClass] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
@@ -215,10 +216,18 @@ const InstituteDashboard = () => {
   });
 
   useEffect(() => {
+    const loadingTimer = setTimeout(() => {
+      setLoading(false);
+    }, 1500);
+
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 1000);
-    return () => clearInterval(timer);
+
+    return () => {
+      clearInterval(timer);
+      clearTimeout(loadingTimer);
+    };
   }, []);
 
   const formatTime = (date) => {

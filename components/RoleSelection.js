@@ -28,12 +28,14 @@ export default function RoleSelection({ onRoleSelect }) {
         {Object.entries(ROLE_CONFIG).map(([role, config]) => {
           const IconComponent = config.icon;
           return (
-            <button
+            <div
               key={role}
+              role="button"
+              tabIndex={0}
               onClick={() => onRoleSelect(role)}
               aria-label={`Select ${config.title} role`}
-              onKeyDown={(e) => handleKeyDown(e, role)} // ✅ NEW — keyboard support
-              className="group p-4 bg-gray-800/70 backdrop-blur-sm rounded-2xl border border-gray-700/50 hover:border-indigo-500/50 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl text-center focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-900" // ✅ NEW — focus ring
+              onKeyDown={(e) => handleKeyDown(e, role)}
+              className="group p-4 bg-gray-800/70 backdrop-blur-sm rounded-2xl border border-gray-700/50 hover:border-indigo-500/50 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl text-center focus:ring-2 focus:ring-purple-500 focus:outline-none cursor-pointer"
             >
               <div
                 className={`w-16 h-16 mx-auto mb-6 rounded-full bg-gradient-to-r ${config.color} p-4 group-hover:shadow-lg transition-all duration-300`}
@@ -53,7 +55,7 @@ export default function RoleSelection({ onRoleSelect }) {
                   Select Role
                 </span>
               </div>
-            </button>
+            </div>
           );
         })}
       </div>

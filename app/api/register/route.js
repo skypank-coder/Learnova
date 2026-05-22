@@ -55,11 +55,12 @@ export async function POST(req) {
       return jsonError("Name, rollNo, email, and photo are required", 400);
     }
 
-    if (file.size > MAX_FILE_SIZE) {
-      return jsonError("File size exceeds 5MB limit", 400);
-    }
-    if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
-      return jsonError("Invalid file type. Only JPEG, PNG, and WebP are allowed", 400);
+    if (!EMAIL_PATTERN.test(email)) {
+      const suggestion = suggestEmailCorrection(email);
+      const errorMessage = suggestion 
+        ? `Invalid email format. Did you mean ${suggestion}?` 
+        : "Invalid email format.";
+      return jsonError(errorMessage, 400);
     }
 
     // 2. Prevent arbitrary registrations - Must register own email
@@ -104,12 +105,17 @@ export async function POST(req) {
       email,
       image: blob.url,
     };
-    await users.insertOne(user);
+    const result = await users.insertOne(user);
 
     return jsonSuccess(
       {
         message: "User registered successfully",
-        user,
+        user: {
+          _id: result.insertedId,
+          name: user.name,
+          rollNo: user.rollNo,
+          email: user.email,
+        },
       },
       201,
     );
