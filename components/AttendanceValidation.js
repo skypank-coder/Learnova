@@ -51,6 +51,9 @@ const AttendanceValidation = ({ onValidationSuccess }) => {
         );
         if (settingsDoc.exists()) {
           const settingsData = settingsDoc.data();
+          if (settingsData) {
+            delete settingsData.passcode;
+          }
           setSettings(settingsData);
           checkTimeValidity(settingsData.timeWindow);
         }
@@ -183,15 +186,32 @@ const AttendanceValidation = ({ onValidationSuccess }) => {
     requestLocation();
   };
 
-  const validatePasscode = () => {
-    if (!settings) return;
-    if (passcode === settings.passcode) {
-      setPasscodeError("");
-      setCurrentStep(3);
-    } else {
-      setPasscodeError(
-        "Invalid passcode. Please contact your teacher for the correct code.",
-      );
+  const validatePasscode = async () => {
+    if (!passcode.trim()) return;
+    setIsLoading(true);
+    setPasscodeError("");
+    try {
+      const token = await user.getIdToken();
+      const response = await fetch("/api/attendance/validate-passcode", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ passcode }),
+      });
+      const data = await response.json();
+      if (response.ok && data.valid) {
+        setCurrentStep(3);
+      } else {
+        setPasscodeError(
+          data.error || "Invalid passcode. Please contact your teacher for the correct code."
+        );
+      }
+    } catch (error) {
+      setPasscodeError("Error validating passcode. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 

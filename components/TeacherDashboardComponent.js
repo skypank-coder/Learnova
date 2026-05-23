@@ -1,3 +1,4 @@
+import { toast } from "react-hot-toast";
 import React, { useState, useEffect } from "react";
 import { Navbar } from "./Navbar";
 import Image from "next/image";
@@ -83,40 +84,42 @@ const TeacherDashboard = () => {
     averageAttendance: 0,
   });
 
+  // 1. Move the function OUTSIDE the useEffect so it can be reused by the button
+  const fetchTodayAttendanceStats = async () => {
+    try {
+      const today = new Date().toISOString().slice(0, 10);
+      const attendanceQuery = query(
+        collection(db, "attendance_records"),
+        where("date", "==", today),
+      );
+      const snapshot = await getDocs(attendanceQuery);
+      const records = snapshot.docs.map((doc) => doc.data());
+
+      const presentToday = records.filter(
+        (r) => r.status === "present" || !r.status,
+      ).length;
+      const lateToday = records.filter((r) => r.status === "late").length;
+      const absentToday = records.filter((r) => r.status === "absent").length;
+      const totalStudents = records.length;
+      const averageAttendance =
+        totalStudents > 0
+          ? Math.round(((presentToday + lateToday) / totalStudents) * 1000) / 10
+          : 0;
+
+      setAttendanceStats({
+        totalStudents,
+        presentToday,
+        absentToday,
+        lateToday,
+        averageAttendance,
+      });
+    } catch (err) {
+      console.error("Failed to fetch today's attendance stats:", err);
+    }
+  };
+
+  // 2. Keep the useEffect to fetch the data when the page first loads
   useEffect(() => {
-    const fetchTodayAttendanceStats = async () => {
-      try {
-        const today = new Date().toISOString().slice(0, 10);
-        const attendanceQuery = query(
-          collection(db, "attendance_records"),
-          where("date", "==", today),
-        );
-        const snapshot = await getDocs(attendanceQuery);
-        const records = snapshot.docs.map((doc) => doc.data());
-
-        const presentToday = records.filter(
-          (r) => r.status === "present" || !r.status,
-        ).length;
-        const lateToday = records.filter((r) => r.status === "late").length;
-        const absentToday = records.filter((r) => r.status === "absent").length;
-        const totalStudents = records.length;
-        const averageAttendance =
-          totalStudents > 0
-            ? Math.round(((presentToday + lateToday) / totalStudents) * 1000) / 10
-            : 0;
-
-        setAttendanceStats({
-          totalStudents,
-          presentToday,
-          absentToday,
-          lateToday,
-          averageAttendance,
-        });
-      } catch (err) {
-        console.error("Failed to fetch today's attendance stats:", err);
-      }
-    };
-
     fetchTodayAttendanceStats();
   }, []);
   const [todayClasses, setTodayClasses] = useState([]);
@@ -417,7 +420,7 @@ const TeacherDashboard = () => {
         ),
       );
     } catch (error) {
-      alert("Failed to update request. Please try again.");
+      toast.error("Failed to update request. Please try again.");
     }
   };
 
@@ -557,6 +560,7 @@ const TeacherDashboard = () => {
                 </div>
                 <button
                   onClick={copyPasscode}
+                  aria-label="Copy passcode"
                   className="bg-white/10 hover:bg-white/20 border border-white/20 text-white p-3 rounded-lg transition-colors"
                 >
                   {copied ? (
@@ -580,7 +584,7 @@ const TeacherDashboard = () => {
               <h2 className="text-2xl font-bold text-white">
                 Today's Attendance Overview
               </h2>
-              <button className="text-accent hover:text-accent/80 transition-colors">
+              <button aria-label="Refresh attendance" className="text-accent hover:text-accent/80 transition-colors">
                 <RefreshCw className="w-5 h-5" />
               </button>
             </div>

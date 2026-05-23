@@ -1,7 +1,8 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useOptimistic } from "react";
 import { useTheme } from "next-themes";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import toast from "react-hot-toast";
 import DarkVeil from "@/components/ui-block/DarkVeil";
 import {
   BookOpen,
@@ -23,6 +24,7 @@ import {
   Search,
   Gamepad2,
   Puzzle,
+  RefreshCw,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -30,7 +32,7 @@ import { Navbar } from "@/components/Navbar";
 import { useRouter } from "next/navigation";
 
 import { useAuth } from "@/hooks/useAuth";
-import { logActivity } from "@/services/activityService";
+import { logActivity, getUserActivities, removeActivity } from "@/services/activityService";
 import { updateUserStat } from "@/services/statsService";
 
 // Reusable animation component
@@ -58,6 +60,23 @@ export default function ActivityPage() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedLevel, setSelectedLevel] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [activities, setActivities] = useState([]);
+  
+  // React 19 Optimistic Hook
+  const [optimisticActivities, addOptimisticActivity] = useOptimistic(
+    activities,
+    (state, newActivity) => {
+      // Filter out if duplicate
+      if (state.some(a => a.title === newActivity.title)) return state;
+      return [newActivity, ...state];
+    }
+  );
+
+  useEffect(() => {
+    if (user?.uid) {
+      getUserActivities(user.uid).then(setActivities);
+    }
+  }, [user]);
 
   const [stats, setStats] = useState({
     games: 0,
@@ -268,27 +287,42 @@ export default function ActivityPage() {
     return categoryMatch && levelMatch && searchMatch;
   });
 
-  const handleStartActivity = async (activity) => {
+  const handleEnrollActivity = async (activity) => {
+    if (!user) {
+      toast.error("Please login to enroll.");
+      return;
+    }
+
+    if (activities.some(a => a.title === activity.title)) {
+      toast("You are already enrolled in this activity", { icon: "ℹ️" });
+      return;
+    }
+
+    const tempId = `temp-${Date.now()}`;
+    const newActivity = {
+      id: tempId,
+      title: activity.title,
+      type: activity.type || "course",
+      progress: 0,
+      timestamp: new Date(),
+      saving: true // Optimistic flag
+    };
+
+    // 1. Instant Optimistic Insertion
+    addOptimisticActivity(newActivity);
+
     try {
-      // Only log if user exists
-      if (user) {
-        await logActivity(user.uid, {
-          title: activity.title,
-          type: activity.type || "course",
-          progress: 0,
-        });
-
-        // Increment statistic
-        await updateUserStat(user.uid, "Courses Enrolled", 1);
-      }
-
-      // Open activity page
-      router.push(`/activity/${activity.id}`);
+      // 2. Asynchronous Persistence
+      const dbId = await logActivity(user.uid, newActivity);
+      await updateUserStat(user.uid, "Courses Enrolled", 1);
+      
+      // 3. Seamless Reconciliation
+      setActivities(prev => [{ ...newActivity, id: dbId, saving: false }, ...prev]);
+      toast.success(`Enrolled in ${newActivity.title}`);
     } catch (error) {
-      console.error("Error starting activity:", error);
-
-      // Still open page even if logging fails
-      router.push(`/activity/${activity.id}`);
+      // 4. Automatic Rollback (Because setActivities wasn't called, the UI automatically reverts after the transition finishes)
+      toast.error("Failed to enroll. Please try again.");
+      console.error("Optimistic rollback:", error);
     }
   };
 
@@ -415,6 +449,68 @@ export default function ActivityPage() {
           </div>
         </section>
 
+        {/* My Recent Activities (Optimistic UI feed) */}
+        {user && optimisticActivities.length > 0 && (
+          <section className="px-4 sm:px-6 lg:px-8 mb-20">
+            <div className="max-w-7xl mx-auto">
+              <Reveal delay={0.1}>
+                <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-8">
+                  My Learning Journey
+                </h2>
+              </Reveal>
+              
+              <div className="flex gap-6 overflow-x-auto pb-8 snap-x snap-mandatory hide-scrollbar">
+                <AnimatePresence mode="popLayout">
+                  {optimisticActivities.map((activity) => (
+                    <motion.div
+                      layout
+                      initial={{ opacity: 0, scale: 0.8, x: -50 }}
+                      animate={{ 
+                        opacity: activity.saving ? 0.6 : 1, 
+                        scale: 1, x: 0 
+                      }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                      key={activity.id}
+                      className="snap-start shrink-0 w-[300px]"
+                    >
+                      <Card className={`relative bg-card backdrop-blur-xl border border-border h-full overflow-hidden ${activity.saving ? "animate-pulse shadow-none border-dashed border-accent/50" : "shadow-lg shadow-accent/10"}`}>
+                        {/* Optimistic saving indicator */}
+                        {activity.saving && (
+                          <div className="absolute top-2 right-2 flex items-center gap-1 bg-accent/20 text-accent text-xs px-2 py-1 rounded-full backdrop-blur-md">
+                            <RefreshCw className="w-3 h-3 animate-spin" />
+                            <span>Saving...</span>
+                          </div>
+                        )}
+                        <CardHeader className="pb-4">
+                          <CardTitle className="text-foreground text-lg">{activity.title}</CardTitle>
+                          <div className="flex items-center gap-2 mt-2">
+                            <span className="text-xs px-2 py-1 rounded-full font-medium bg-blue-600 text-white capitalize">{activity.type}</span>
+                            <span className="text-xs text-muted-foreground">{new Date(activity.timestamp).toLocaleDateString()}</span>
+                          </div>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="w-full h-2 bg-gray-700 rounded-full overflow-hidden mb-4">
+                            <div className="h-full bg-gradient-to-r from-accent to-purple-500 rounded-full" style={{ width: `${activity.progress}%` }} />
+                          </div>
+                          <Button 
+                            disabled={activity.saving}
+                            onClick={() => router.push(`/activity/${activity.id}`)}
+                            className="w-full bg-accent/10 hover:bg-accent/20 text-accent transition-all duration-300"
+                          >
+                            <Play className="w-4 h-4 mr-2" />
+                            {activity.progress > 0 ? "Continue" : "Start Now"}
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </div>
+            </div>
+          </section>
+        )}
+
         {/* Featured Activities */}
         <section className="px-4 sm:px-6 lg:px-8 mb-20">
           <div className="max-w-7xl mx-auto">
@@ -488,11 +584,11 @@ export default function ActivityPage() {
                       </div>
 
                       <Button
-                        onClick={() => handleStartActivity(activity)}
+                        onClick={() => handleEnrollActivity(activity)}
                         className={`w-full bg-gradient-to-r ${activity.gradient} hover:shadow-lg hover:shadow-accent/25 transition-all duration-300 group-hover:scale-[1.02]`}
                       >
-                        <Play className="w-4 h-4 mr-2" />
-                        Start {activity.type === "quiz" ? "Quiz" : "Game"}
+                        <Sparkles className="w-4 h-4 mr-2" />
+                        Enroll Now
                         <ChevronRight className="w-4 h-4 ml-2" />
                       </Button>
                     </CardContent>
@@ -658,11 +754,11 @@ export default function ActivityPage() {
 
                       <Button
                         size="sm"
-                        onClick={() => handleStartActivity(activity)}
+                        onClick={() => handleEnrollActivity(activity)}
                         className={`w-full bg-gradient-to-r ${activity.gradient} hover:shadow-md transition-all duration-300 text-xs sm:text-sm`}
                       >
-                        <Play className="w-3 h-3 mr-2" />
-                        Play Now
+                        <Sparkles className="w-3 h-3 mr-2" />
+                        Enroll Now
                       </Button>
                     </CardContent>
                   </Card>

@@ -7,6 +7,7 @@ import {
   sendPasswordResetEmail,
   sendEmailVerification,
   signOut,
+  deleteUser,
 } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import {
@@ -114,13 +115,19 @@ export const signupWithEmail = async (
     );
     const user = userCredential.user;
 
-    // Create user profile with role
-    await createUserProfile(user, selectedRole, additionalData);
+    try {
+      // Create user profile with role
+      await createUserProfile(user, selectedRole, additionalData);
 
-    // Send verification email to new users
-    await sendEmailVerification(user);
+      // Send verification email to new users
+      await sendEmailVerification(user);
 
-    return { success: true, needsVerification: true };
+      return { success: true, needsVerification: true };
+    } catch (profileError) {
+      // Clean up the orphaned user account if profile creation fails
+      await deleteUser(user).catch(() => {});
+      throw profileError;
+    }
   } catch (err) {
     return {
       success: false,
@@ -148,11 +155,8 @@ export const loginWithGoogle = async (
 ) => {
   try {
     if (!auth || !db) {
-      console.error("❌ Google Auth Failed: Firebase not initialized. Check console for details.");
       return { success: false, error: FIREBASE_CONFIG_ERROR };
     }
-
-    console.log("🔵 Starting Google OAuth flow for role:", selectedRole);
 
     const provider = new GoogleAuthProvider();
     const userCredential = await signInWithPopup(auth, provider);
@@ -174,7 +178,7 @@ export const loginWithGoogle = async (
         // New Google user signing up - create profile with selected role
         const nameToUse = user.displayName || additionalData.fullName?.trim();
         if (!nameToUse) {
-          // ✅ modular style
+          await deleteUser(user).catch(() => {});
           await signOut(auth);
           return {
             success: false,
@@ -182,10 +186,15 @@ export const loginWithGoogle = async (
           };
         }
 
-        await createUserProfile(user, selectedRole, {
-          ...additionalData,
-          fullName: nameToUse,
-        });
+        try {
+          await createUserProfile(user, selectedRole, {
+            ...additionalData,
+            fullName: nameToUse,
+          });
+        } catch (profileError) {
+          await deleteUser(user).catch(() => {});
+          throw profileError;
+        }
 
         // Email is already verified with Google
         return { success: true, userData: { role: selectedRole } };

@@ -41,6 +41,15 @@ const AttendanceHeatmap = dynamic(
     loading: () => <ChartSkeleton variant="heatmap" />,
   }
 );
+
+const AttendanceCalendar = dynamic(
+  () => import("./AttendanceCalendar.jsx"),
+  {
+    ssr: false,
+    loading: () => <ChartSkeleton variant="heatmap" />,
+  }
+);
+
 import AttendanceAnalytics from "./dashboard/AttendanceAnalytics";
 import StreakCounter from "./gamification/StreakCounter";
 import XpProgressBar from "./gamification/XpProgressBar";
@@ -57,6 +66,7 @@ const StudentDashboard = () => {
   const [upcomingClass, setUpcomingClass] = useState(null);
   const [isAttendanceWindow, setIsAttendanceWindow] = useState(false);
   const [gamificationData, setGamificationData] = useState(null);
+  const [viewMode, setViewMode] = useState("heatmap");
 
   useEffect(() => {
     const fetchGamification = async () => {
@@ -277,6 +287,32 @@ const StudentDashboard = () => {
 
       {/* Main */}
       <div className="relative z-10 container mx-auto px-4 py-8 space-y-8">
+        {/* Gamification Section */}
+        {gamificationData && (
+          <div className="bg-black/20 backdrop-blur-xl rounded-2xl border border-white/10 p-6 shadow-2xl flex flex-col gap-6">
+            <div className="flex flex-col lg:flex-row gap-6">
+              <div className="flex flex-col gap-6 flex-1">
+                <div className="flex gap-4 items-center">
+                  <StreakCounter currentStreak={gamificationData.currentStreak} />
+                  <div className="flex-1">
+                    <XpProgressBar 
+                      currentLevel={gamificationData.currentLevel} 
+                      currentXp={gamificationData.totalXp} 
+                    />
+                  </div>
+                </div>
+                <BadgeGallery unlockedBadges={gamificationData.unlockedBadges} />
+              </div>
+            </div>
+            {user && user.uid && (
+              <AttendanceAnalytics
+                userId={user.uid}
+                recentActivity={recentActivity}
+              />
+            )}
+          </div>
+        )}
+
         {/* Attendance Window */}
         {isAttendanceWindow && upcomingClass && (
           <div className="bg-gradient-to-r from-green-500/20 to-blue-500/20 backdrop-blur-xl rounded-2xl border border-white/20 p-6 shadow-2xl">
@@ -492,8 +528,39 @@ const StudentDashboard = () => {
               </div>
             </div>
 
-            {/* Heatmap */}
-            <AttendanceHeatmap recentActivity={recentActivity} />
+            {/* Heatmap / Calendar View */}
+            <div>
+              <div className="flex justify-end mb-4">
+                <div className="bg-black/40 backdrop-blur-md p-1 rounded-xl flex items-center border border-white/10 w-fit">
+                  <button
+                    onClick={() => setViewMode("heatmap")}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                      viewMode === "heatmap"
+                        ? "bg-accent text-white shadow-lg"
+                        : "text-gray-400 hover:text-white"
+                    }`}
+                  >
+                    Heatmap
+                  </button>
+                  <button
+                    onClick={() => setViewMode("calendar")}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                      viewMode === "calendar"
+                        ? "bg-accent text-white shadow-lg"
+                        : "text-gray-400 hover:text-white"
+                    }`}
+                  >
+                    Calendar
+                  </button>
+                </div>
+              </div>
+
+              {viewMode === "heatmap" ? (
+                <AttendanceHeatmap recentActivity={recentActivity} />
+              ) : (
+                <AttendanceCalendar recentActivity={recentActivity} />
+              )}
+            </div>
           </div>
 
           {/* Right */}
@@ -673,32 +740,9 @@ const StatCard = ({ color, label, value }) => {
   const style = styles[color].split(" ");
 
   return (
-    <div className="flex flex-col gap-6 p-4 md:p-6 w-full max-w-7xl mx-auto min-h-screen">
-      {/* Gamification Section */}
-      {gamificationData && (
-        <div className="flex flex-col lg:flex-row gap-6 mb-4">
-          <div className="flex flex-col gap-6 flex-1">
-            <div className="flex gap-4 items-center">
-              <StreakCounter currentStreak={gamificationData.currentStreak} />
-              <div className="flex-1">
-                <XpProgressBar 
-                  currentLevel={gamificationData.currentLevel} 
-                  currentXp={gamificationData.totalXp} 
-                />
-              </div>
-            </div>
-            <BadgeGallery unlockedBadges={gamificationData.unlockedBadges} />
-          </div>
-        </div>
-      )}
-
-      {user && user.uid && (
-        <AttendanceAnalytics
-          userId={user.uid}
-          recentActivity={recentActivity}
-        />
-      )}
-      {/* KEEP YOUR ENTIRE EXISTING JSX HERE EXACTLY SAME */}
+    <div className={`bg-gradient-to-br ${style[0]} ${style[1]} rounded-xl p-4 border ${style[2]}`}>
+      <div className={`text-2xl font-bold ${style[3]}`}>{value}</div>
+      <div className={`${style[4]} text-sm`}>{label}</div>
     </div>
   );
 };

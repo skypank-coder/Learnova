@@ -3,6 +3,9 @@ import withPWAInit from "@ducanh2912/next-pwa";
 const withPWA = withPWAInit({
   dest: "public",
   customWorkerDir: "worker",
+  fallbacks: {
+    document: "/~offline",
+  },
   disable: process.env.NODE_ENV === "development",
   register: true,
   skipWaiting: true,
@@ -83,6 +86,8 @@ const nextConfig = {
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           { key: "Permissions-Policy", value: "camera=(self), microphone=(self), geolocation=(self)" },
+          { key: "X-XSS-Protection", value: "1; mode=block" },
+          { key: "Strict-Transport-Security", value: "max-age=31536000; includeSubDomains; preload" },
         ],
       },
       {

@@ -144,13 +144,7 @@ export const PATCH = withErrorHandler(async (request) => {
     { upsert: true }
   );
 
-  // FIX: Replaced unstructured console.log with a professional Winston audit block
-  console.info({
-    message: "User settings profiles modified successfully",
-    targetUserId,
-    operatorId: decodedToken.uid,
-    operatorRole: isOperatorAdmin ? "admin" : "owner"
-  });
+  console.log(`[Audit Log] Settings updated successfully for target user: ${targetUserId} by operator: ${decodedToken.uid} (Role: ${isOperatorAdmin ? "admin" : "owner"})`);
 
   return NextResponse.json({ message: "Settings saved successfully" });
 });

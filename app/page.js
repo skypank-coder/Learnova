@@ -149,19 +149,19 @@ const IMPACT_DATA = [
   },
 ];
 
-// ✅ UPDATED FIXED COMPONENT
 const SectionBadge = ({
   icon: Icon,
   text,
   gradient = "from-purple-500/20 to-pink-500/20",
-  borderClass = "border-purple-500/30", // 1. Pass the full class name string here
-  textColor = "purple-300",
+  borderClass = "border-purple-500/30",
+  iconClass = "text-purple-400",
+  textClass = "text-purple-300",
 }) => (
   <div
-    className={`inline-flex items-center px-4 py-2 bg-gradient-to-r ${gradient} rounded-full border ${borderClass} backdrop-blur-sm mb-6`} // 2. Drop the template literal concatenation
+    className={`inline-flex items-center px-4 py-2 bg-gradient-to-r ${gradient} rounded-full border ${borderClass} backdrop-blur-sm mb-6`}
   >
-    <Icon className={`w-5 h-5 text-${textColor.split("-")[0]}-400 mr-2`} />
-    <span className={`text-${textColor} font-medium`}>{text}</span>
+    <Icon className={`w-5 h-5 ${iconClass} mr-2`} />
+    <span className={`${textClass} font-medium`}>{text}</span>
   </div>
 );
 
@@ -379,13 +379,13 @@ export default function AboutPage() {
           </div>
         </section>
         <div className="mt-8 flex justify-center">
-  <a
-    href="#mission"
-    className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full transition-all duration-300"
-  >
-    Explore More ↓
-  </a>
-</div>
+          <a
+            href="#mission"
+            className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full transition-all duration-300"
+          >
+            Explore More ↓
+          </a>
+        </div>
 
         {/* Mission Section */}
         <section
@@ -471,10 +471,11 @@ export default function AboutPage() {
                 icon={Heart}
                 text="Our Values"
                 gradient="from-accent/20 to-purple-500/20"
-                borderColor="accent/30"
-                textColor="accent"
+                borderClass="border-accent/30"
+                iconClass="text-accent"
+                textClass="text-accent"
               />
-              
+
 
               <h2 className="text-4xl md:text-5xl font-bold text-black dark:text-white mb-6">
                 Core Principles That Drive Us
@@ -485,10 +486,10 @@ export default function AboutPage() {
               </p>
             </Reveal>
 
-            <div className="grid md:grid-cols-3 gap-8 items-stretch">
+            <div className="grid md:grid-cols-3 gap-8 items-stretch auto-rows-fr">
               {VALUES_DATA.map((value, index) => (
                 <Reveal key={value.title} delay={index * 0.08}>
-                  <Card className="group bg-white dark:bg-black/40 border-gray-200 dark:border-white/10 backdrop-blur-xl shadow-sm hover:shadow-lg hover:shadow-accent/10 hover:border-accent/50 transition-all duration-700 hover:scale-[1.02]">
+                  <Card className="group h-full flex flex-col bg-white dark:bg-black/40 border-gray-200 dark:border-white/10 backdrop-blur-xl shadow-sm hover:shadow-lg hover:shadow-accent/10 hover:border-accent/50 transition-all duration-700 hover:scale-[1.02]">
                     <CardHeader className="text-center pb-4">
                       <div
                         className={`mx-auto w-20 h-20 bg-gradient-to-br ${value.gradient} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-105 transition-transform duration-500 relative overflow-hidden`}
@@ -500,7 +501,7 @@ export default function AboutPage() {
                         {value.title}
                       </CardTitle>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="flex flex-col flex-grow">
                       <CardDescription className="text-gray-600 dark:text-gray-300 leading-relaxed group-hover:text-gray-900 dark:group-hover:text-gray-100 transition-colors duration-500">
                         {value.description}
                       </CardDescription>
@@ -520,8 +521,9 @@ export default function AboutPage() {
                 icon={Users}
                 text="Our Team"
                 gradient="from-emerald-500/20 to-teal-500/20"
-                borderColor="emerald-500/30"
-                textColor="emerald-400"
+                borderClass="border-emerald-500/30"
+                iconClass="text-emerald-400"
+                textClass="text-emerald-400"
               />
 
               <h2 className="text-4xl md:text-5xl font-bold text-black dark:text-white mb-6">
@@ -533,11 +535,11 @@ export default function AboutPage() {
               </p>
             </Reveal>
 
-            <div className="grid md:grid-cols-3 gap-8">
+            <div className="grid md:grid-cols-3 gap-8 auto-rows-fr">
               {TEAM_MEMBERS.map((member, index) => (
                 <Reveal key={member.name} delay={index * 0.08}>
-                  <Card className="group bg-white dark:bg-black/40 border-gray-200 dark:border-white/10 backdrop-blur-xl shadow-sm hover:shadow-lg hover:shadow-accent/10 hover:border-accent/50 transition-all duration-700 hover:scale-[1.02]">
-                    <CardContent className="pt-8 text-center">
+                  <Card className="group h-full flex flex-col bg-white dark:bg-black/40 border-gray-200 dark:border-white/10 backdrop-blur-xl shadow-sm hover:shadow-lg hover:shadow-accent/10 hover:border-accent/50 transition-all duration-700 hover:scale-[1.02]">
+                    <CardContent className="pt-8 text-center flex flex-col flex-grow">
                       <div className="relative mb-6">
                         <div
                           className={`w-28 h-28 bg-gradient-to-br ${member.color} rounded-full flex items-center justify-center mx-auto group-hover:scale-105 transition-transform duration-500 relative overflow-hidden`}
@@ -590,8 +592,9 @@ export default function AboutPage() {
                 icon={TrendingUp}
                 text="Our Impact"
                 gradient="from-white/10 to-white/10"
-                borderColor="white/20"
-                textColor="white"
+                borderClass="border-white/20"
+                iconClass="text-white"
+                textClass="text-white"
               />
 
               <h2 className="text-4xl md:text-5xl font-bold text-black dark:text-white mb-6">
@@ -607,7 +610,7 @@ export default function AboutPage() {
               {STATS_DATA.map((stat, index) => (
                 <Reveal key={stat.label} delay={index * 0.08}>
                   <div className="group text-center">
-                    <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-8 border border-white/20 hover:border-accent/40 transition-all duration-700 hover:scale-[1.02] hover:shadow-2xl">
+                    <div className="h-full bg-white/10 backdrop-blur-xl rounded-3xl p-8 border border-white/20 hover:border-accent/40 transition-all duration-700 hover:scale-[1.02] hover:shadow-2xl">
                       <stat.icon className="w-12 h-12 text-accent mx-auto mb-6 group-hover:scale-110 transition-transform duration-500" />
                       <div className="text-4xl md:text-5xl font-bold text-black dark:text-white mb-3 group-hover:text-accent transition-colors duration-500">
                         {stat.number}
