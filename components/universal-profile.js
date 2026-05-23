@@ -59,6 +59,7 @@ export default function UniversalProfile() {
   // Role state fetched from Firestore
   const [role, setRole] = useState("student");
   const [userData, setUserData] = useState(null);
+  const [stats, setStats] = useState(null);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -71,8 +72,15 @@ export default function UniversalProfile() {
           setUserData(data); //to save the full profile data
           setRole(data.role || "student");
         }
+
+        // Fetch dashboard statistics from the userStats collection
+        const statsRef = doc(db, "userStats", user.uid);
+        const statsSnap = await getDoc(statsRef);
+        if (statsSnap.exists()) {
+          setStats(statsSnap.data());
+        }
       } catch (error) {
-        // Silently handle error fetching user role
+        // Silently handle error fetching user data / stats
       }
     };
     fetchUserData();
