@@ -298,7 +298,7 @@ describe("GET /api/conversations - History Retrieval Security and Performance Te
     expect(body.data).toEqual(dummyConversations);
 
     expect(mockFind).toHaveBeenCalledWith({ userId: "user-123" });
-    expect(mockSort).toHaveBeenCalledWith({ timestamp: 1 });
+    expect(mockSort).toHaveBeenCalledWith({ timestamp: -1 });
     expect(mockLimit).toHaveBeenCalledWith(50);
   });
 
