@@ -163,6 +163,7 @@ export function Navbar() {
 
   const navigationItems = [
     { href: "/", label: "Home", icon: Home },
+    { href: "/productivity", label: "Focus", icon: Sparkles },
     { href: "/activity", label: "Activities", icon: Activity },
     { href: "/contact", label: "Contact", icon: Mail },
   ];
@@ -186,13 +187,13 @@ export function Navbar() {
     <>
       {/* Background Dimming Layer on Scroll */}
       <div
-        className="fixed w-full top-0 z-[60] h-24 bg-gradient-to-b from-black/60 via-black/10 to-transparent pointer-events-none transition-opacity duration-300"
+        className="fixed w-full top-0 z-60 h-24 bg-linear-to-b from-black/60 via-black/10 to-transparent pointer-events-none transition-opacity duration-300"
         style={{ opacity: 1 - scrollProgressValue * 0.5 }}
       />
 
       {/* Main Navbar */}
       <nav
-        className="fixed w-full top-0 left-0 right-0 z-[70] transition-all duration-300 ease-out"
+        className="fixed w-full top-0 left-0 right-0 z-70 transition-all duration-300 ease-out"
         style={{
           backgroundColor: !mounted 
             ? "rgba(255, 255, 255, 0.95)" 
@@ -213,7 +214,7 @@ export function Navbar() {
             
             {/* Logo Group */}
             <Link href="/" className="flex items-center space-x-3">
-              <div className="bg-gradient-to-br from-accent to-blue-500 p-2 rounded-xl">
+              <div className="bg-linear-to-br from-accent to-blue-500 p-2 rounded-xl">
                 <BookOpen className="h-6 w-6 text-white" />
               </div>
               <div>
@@ -258,9 +259,9 @@ export function Navbar() {
               {/* Authentication Actions View */}
               {isAuthenticated ? (
                 <div className="flex items-center space-x-2 sm:space-x-4 ml-2 sm:ml-6">
-                  <Button asChild className="hidden sm:block relative bg-gradient-to-r from-accent to-blue-500 hover:from-accent/90 hover:to-blue-600 text-white font-medium shadow-lg hover:shadow-2xl hover:shadow-accent/30 transition-all duration-300 hover:scale-105 group overflow-hidden">
+                  <Button asChild className="hidden sm:block relative bg-linear-to-r from-accent to-blue-500 hover:from-accent/90 hover:to-blue-600 text-white font-medium shadow-lg hover:shadow-2xl hover:shadow-accent/30 transition-all duration-300 hover:scale-105 group overflow-hidden">
                     <Link href="/attendance">
-                      <span className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      <span className="absolute inset-0 bg-linear-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                       <span className="relative flex items-center">
                         Mark Attendance
                         <Sparkles className="ml-2 h-4 w-4 transition-all duration-300" />
@@ -268,9 +269,9 @@ export function Navbar() {
                     </Link>
                   </Button>
                   
-                  <Button asChild className="hidden lg:block relative bg-gradient-to-r from-accent to-blue-500 hover:from-accent/90 hover:to-blue-600 text-white font-medium shadow-lg hover:shadow-2xl hover:shadow-accent/30 transition-all duration-300 hover:scale-105 group overflow-hidden">
+                  <Button asChild className="hidden lg:block relative bg-linear-to-r from-accent to-blue-500 hover:from-accent/90 hover:to-blue-600 text-white font-medium shadow-lg hover:shadow-2xl hover:shadow-accent/30 transition-all duration-300 hover:scale-105 group overflow-hidden">
                     <Link href="/notices">
-                      <span className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      <span className="absolute inset-0 bg-linear-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                       <span className="relative flex items-center">
                         Notice Board
                         <Sparkles className="ml-2 h-4 w-4 transition-all duration-300" />
@@ -293,7 +294,7 @@ export function Navbar() {
                     </button>
 
                     {isNotificationOpen && (
-                      <div className="absolute right-0 mt-2 w-80 bg-card border border-border rounded-2xl shadow-2xl z-[52] overflow-hidden">
+                      <div className="absolute right-0 mt-2 w-80 bg-card border border-border rounded-2xl shadow-2xl z-52 overflow-hidden">
                         <div className="p-4 border-b border-border flex justify-between items-center bg-muted/30">
                           <h3 className="text-foreground font-semibold text-sm">
                             Notifications
@@ -357,7 +358,7 @@ export function Navbar() {
                             onError={handleImageError}
                           />
                         ) : (
-                          <div className="fallback-avatar absolute inset-0 rounded-full bg-gradient-to-br from-accent via-blue-500 to-purple-500 flex items-center justify-center">
+                          <div className="fallback-avatar absolute inset-0 rounded-full bg-linear-to-br from-accent via-blue-500 to-purple-500 flex items-center justify-center">
                             <span className="text-sm font-bold text-white">
                               {getUserInitials(getUserDisplayName())}
                             </span>
@@ -382,7 +383,7 @@ export function Navbar() {
                     </button>
 
                     {isDropdownOpen && (
-                      <div className="absolute right-0 mt-3 min-w-64 bg-background border border-border rounded-2xl shadow-2xl py-2 z-[52]">
+                      <div className="absolute right-0 mt-3 min-w-64 bg-background border border-border rounded-2xl shadow-2xl py-2 z-52">
                         {userMenuItems.map((item) => (
                           <Link
                             key={item.key}
@@ -408,9 +409,9 @@ export function Navbar() {
                 </div>
               ) : (
                 <div className="ml-2 sm:ml-6">
-                  <Button asChild className="relative bg-gradient-to-r from-accent to-blue-500 hover:from-accent/90 hover:to-blue-600 text-white font-medium shadow-lg hover:shadow-2xl hover:shadow-accent/30 transition-all duration-300 hover:scale-105 group overflow-hidden">
+                  <Button asChild className="relative bg-linear-to-r from-accent to-blue-500 hover:from-accent/90 hover:to-blue-600 text-white font-medium shadow-lg hover:shadow-2xl hover:shadow-accent/30 transition-all duration-300 hover:scale-105 group overflow-hidden">
                     <Link href="/auth">
-                      <span className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      <span className="absolute inset-0 bg-linear-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                       <span className="relative flex items-center">
                         Login / Signup
                         <Sparkles className="ml-2 h-4 w-4 transition-all duration-300" />
@@ -442,11 +443,11 @@ export function Navbar() {
       {isMenuOpen && (
         <>
           <div
-            className="fixed inset-0 bg-background/60 backdrop-blur-sm z-[49] md:hidden"
+            className="fixed inset-0 bg-background/60 backdrop-blur-sm z-49 md:hidden"
             onClick={() => setIsMenuOpen(false)}
           />
 
-          <div className="fixed top-0 right-0 h-full w-80 max-w-[85vw] bg-background text-foreground z-[52] md:hidden border-l border-border shadow-2xl flex flex-col justify-between">
+          <div className="fixed top-0 right-0 h-full w-80 max-w-[85vw] bg-background text-foreground z-52 md:hidden border-l border-border shadow-2xl flex flex-col justify-between">
             <div>
               <div className="p-6 border-b border-border flex justify-between items-center">
                 <h2 className="text-foreground text-lg font-bold">Menu</h2>
@@ -476,7 +477,7 @@ export function Navbar() {
                         />
                       )}
                       <div
-                        className={`fallback-avatar absolute inset-0 rounded-full bg-gradient-to-br from-accent via-blue-500 to-purple-500 flex items-center justify-center border-2 border-accent/50 shadow-lg ${
+                        className={`fallback-avatar absolute inset-0 rounded-full bg-linear-to-br from-accent via-blue-500 to-purple-500 flex items-center justify-center border-2 border-accent/50 shadow-lg ${
                           getUserPhoto() ? "hidden" : "flex"
                         }`}
                       >
@@ -570,7 +571,7 @@ export function Navbar() {
                   Sign Out
                 </Button>
               ) : (
-                <Button asChild className="w-full bg-gradient-to-r from-accent to-blue-500 hover:from-accent/90 hover:to-blue-600 text-white font-medium shadow-lg transition-all">
+                <Button asChild className="w-full bg-linear-to-r from-accent to-blue-500 hover:from-accent/90 hover:to-blue-600 text-white font-medium shadow-lg transition-all">
                   <Link href="/auth?mode=signup" onClick={() => setIsMenuOpen(false)}>
                     <Sparkles className="h-4 w-4 mr-3" />
                     Get Started

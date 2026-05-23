@@ -9,6 +9,7 @@ export default function Footer() {
   const currentYear = new Date().getFullYear();
   const quickLinks = [
     { label: "Home", href: "/" },
+    { label: "Productivity", href: "/productivity" },
     { label: "Activities", href: "/activity" },
     { label: "Contact", href: "/contact" },
     { label: "Register", href: "/register" },
@@ -18,6 +19,7 @@ export default function Footer() {
   const sectionLinks = [
     { label: "Mission", href: "/#mission" },
     { label: "Values", href: "/#values" },
+    { label: "Productivity", href: "/#productivity" },
     { label: "Team", href: "/#team" },
     { label: "Impact", href: "/#impact" },
     { label: "Get Started", href: "/#get-started" },
