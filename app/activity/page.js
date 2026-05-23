@@ -385,9 +385,9 @@ export default function ActivityPage() {
         <section className="pt-32 pb-16 px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto text-center">
             <Reveal delay={0.1}>
-              <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-accent/20 to-purple-500/20 rounded-full border border-accent/30 backdrop-blur-sm mb-6">
-                <Gamepad2 className="w-5 h-5 text-accent-foreground mr-2" />
-                <span className="text-accent-foreground font-medium">
+              <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-accent/10 to-purple-500/10 dark:from-accent/20 dark:to-purple-500/20 rounded-full border border-accent/20 dark:border-accent/30 backdrop-blur-sm mb-6">
+                <Gamepad2 className="w-5 h-5 text-accent dark:text-accent-foreground mr-2" />
+                <span className="text-accent dark:text-accent-foreground font-medium">
                   Interactive Learning
                 </span>
               </div>
@@ -616,7 +616,7 @@ export default function ActivityPage() {
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder="Search activities..."
-                      className="bg-transparent text-white placeholder-gray-500 outline-none w-full text-sm"
+                      className="bg-transparent text-foreground placeholder-muted-foreground outline-none w-full text-sm"
                       aria-label="Search activities"
                     />
                   </div>
@@ -636,7 +636,7 @@ export default function ActivityPage() {
                           className={`flex items-center justify-center px-3 py-2 min-h-[42px] text-xs sm:text-sm rounded-full whitespace-nowrap transition-all duration-300 ${
                             selectedCategory === category.id
                               ? "bg-gradient-to-r from-accent to-purple-500 text-white shadow-lg shadow-accent/25"
-                              : "bg-black/30 text-gray-300 hover:bg-black/50 hover:text-white border border-white/10"
+                              : "bg-slate-100 dark:bg-black/30 text-slate-700 dark:text-gray-300 hover:bg-slate-200 dark:hover:bg-black/50 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-white/10"
                           }`}
                         >
                           <category.icon className="w-4 h-4 mr-2" />
@@ -659,7 +659,7 @@ export default function ActivityPage() {
                           className={`px-4 py-2 rounded-full transition-all duration-300 text-sm ${
                             selectedLevel === level.id
                               ? "bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/25"
-                              : "bg-black/30 text-gray-300 hover:bg-black/50 hover:text-white border border-white/10"
+                              : "bg-slate-100 dark:bg-black/30 text-slate-700 dark:text-gray-300 hover:bg-slate-200 dark:hover:bg-black/50 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-white/10"
                           }`}
                         >
                           {level.label}
@@ -801,12 +801,12 @@ export default function ActivityPage() {
                 <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4 text-center">
                   Ready to Level Up Your Learning?
                 </h2>
-                <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto text-center">
+                <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto text-center">
                   Join thousands of students who are making learning fun and
                   engaging through our interactive platform.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <Button className="bg-gradient-to-r from-accent to-purple-500 hover:shadow-xl hover:shadow-accent/25 transition-all duration-300 hover:scale-105 text-foreground font-semibold">
+                  <Button className="bg-gradient-to-r from-accent to-purple-500 hover:shadow-xl hover:shadow-accent/25 transition-all duration-300 hover:scale-105 text-white font-semibold">
                     <Sparkles className="w-5 h-5 mr-2" />
                     Start Playing Now
                   </Button>
