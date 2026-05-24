@@ -35,6 +35,31 @@ export default function Contact() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null);
   const [errors, setErrors] = useState({});
+  const [cooldown, setCooldown] = useState(false);
+  const [cooldownTimer, setCooldownTimer] = useState(0);
+
+  useEffect(() => {
+    const COOLDOWN_MS = 60 * 1000;
+    const lastSubmit = localStorage.getItem('learnova_contact_last_submit');
+    if (lastSubmit) {
+      const elapsed = Date.now() - parseInt(lastSubmit);
+      const remaining = Math.ceil((COOLDOWN_MS - elapsed) / 1000);
+      if (remaining > 0) {
+        setCooldown(true);
+        setCooldownTimer(remaining);
+        const interval = setInterval(() => {
+          setCooldownTimer((prev) => {
+            if (prev <= 1) {
+              clearInterval(interval);
+              setCooldown(false);
+              return 0;
+            }
+            return prev - 1;
+          });
+        }, 1000);
+      }
+    }
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -74,6 +99,16 @@ export default function Contact() {
   const handleSubmit = async (e) => {
   e.preventDefault();
 
+  const COOLDOWN_MS = 60 * 1000;
+  const lastSubmit = localStorage.getItem('learnova_contact_last_submit');
+  if (lastSubmit && Date.now() - parseInt(lastSubmit) < COOLDOWN_MS) {
+    setSubmitStatus({
+      type: 'error',
+      message: `Please wait ${cooldownTimer} seconds before sending another message.`,
+    });
+    return;
+  }
+
   if (!validateForm()) {
     setSubmitStatus({
       type: "error",
@@ -104,6 +139,19 @@ export default function Contact() {
       company: "",
       message: "",
     });
+
+    localStorage.setItem('learnova_contact_last_submit', Date.now().toString());
+    setCooldown(true);
+    let seconds = 60;
+    setCooldownTimer(seconds);
+    const interval = setInterval(() => {
+      seconds -= 1;
+      setCooldownTimer(seconds);
+      if (seconds === 0) {
+        clearInterval(interval);
+        setCooldown(false);
+      }
+    }, 1000);
 
     setErrors({});
   } catch (error) {
@@ -324,13 +372,18 @@ export default function Contact() {
 
                     <button
                       type="submit"
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || cooldown}
                       className="group w-full bg-gradient-to-r from-accent to-purple-500 text-white py-4 px-6 rounded-xl font-semibold hover:shadow-xl hover:shadow-accent/25 transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
                     >
                       {isSubmitting ? (
                         <>
                           <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                           Sending...
+                        </>
+                      ) : cooldown ? (
+                        <>
+                          <Clock className="w-5 h-5" />
+                          Please wait {cooldownTimer}s
                         </>
                       ) : (
                         <>
