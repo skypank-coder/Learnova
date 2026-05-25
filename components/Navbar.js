@@ -2,12 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  useState,
-  useRef,
-  useEffect,
-  useCallback,
-} from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -180,7 +175,6 @@ export function Navbar() {
   useEffect(() => {
     setIsMenuOpen(false);
     setIsDropdownOpen(false);
-    setIsNotificationOpen(false);
     setIsLangOpen(false);
   }, [pathname]);
 
