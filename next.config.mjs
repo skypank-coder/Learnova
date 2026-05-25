@@ -23,7 +23,6 @@ const withPWA = withPWAInit({
         handler: "NetworkFirst",
         options: {
           cacheName: "pages",
-          networkTimeoutSeconds: 10,
           plugins: [
             {
               handlerDidError: async () => {
