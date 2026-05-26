@@ -10,13 +10,13 @@ export const runtime = "nodejs";
 export const POST = withErrorHandler(async (request) => {
   const decodedToken = await authenticateRequest(request);
 
-  // Rate limiting
+  // Rate limiting by UID
   const rateLimitResult = await checkRateLimit(decodedToken.uid);
   if (!rateLimitResult.allowed) {
     return jsonError("Too many requests. Please try again later.", 429);
   }
 
-  // Parse body
+  // Parse body (Max 10KB)
   const body = await parseJSON(request, 1024 * 10);
 
   // Validate body using the library validator

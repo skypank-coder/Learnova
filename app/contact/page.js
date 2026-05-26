@@ -38,9 +38,9 @@ export default function Contact() {
   const [errors, setErrors] = useState({});
   const [cooldown, setCooldown] = useState(false);
   const [cooldownTimer, setCooldownTimer] = useState(0);
+  const cooldownIntervalRef = useRef(null);
 
   useEffect(() => {
-    let interval; // Store interval reference securely
     const COOLDOWN_MS = 60 * 1000;
     const lastSubmit = localStorage.getItem('learnova_contact_last_submit');
     if (lastSubmit) {
@@ -49,10 +49,11 @@ export default function Contact() {
       if (remaining > 0) {
         setCooldown(true);
         setCooldownTimer(remaining);
-        interval = setInterval(() => {
+        cooldownIntervalRef.current = setInterval(() => {
           setCooldownTimer((prev) => {
             if (prev <= 1) {
-              clearInterval(interval);
+              clearInterval(cooldownIntervalRef.current);
+              cooldownIntervalRef.current = null;
               setCooldown(false);
               return 0;
             }
@@ -64,7 +65,9 @@ export default function Contact() {
     
     // CRITICAL FIX: Cleanup function to destroy the interval on component unmount
     return () => {
-      if (interval) clearInterval(interval);
+      if (cooldownIntervalRef.current) {
+        clearInterval(cooldownIntervalRef.current);
+      }
     };
   }, []);
 
@@ -153,11 +156,17 @@ export default function Contact() {
     setCooldown(true);
     let seconds = 60;
     setCooldownTimer(seconds);
-    const interval = setInterval(() => {
+
+    if (cooldownIntervalRef.current) {
+      clearInterval(cooldownIntervalRef.current);
+    }
+
+    cooldownIntervalRef.current = setInterval(() => {
       seconds -= 1;
       setCooldownTimer(seconds);
       if (seconds === 0) {
-        clearInterval(interval);
+        clearInterval(cooldownIntervalRef.current);
+        cooldownIntervalRef.current = null;
         setCooldown(false);
       }
     }, 1000);
