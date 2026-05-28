@@ -244,6 +244,7 @@ export default function FaceRecognizer({ authUser }) {
     return () => {
       isMounted.current = false;
 
+      // Cancel all async operations
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
@@ -286,6 +287,7 @@ export default function FaceRecognizer({ authUser }) {
         labels.map(async (student) => {
           try {
             if (!isMounted.current || abortControllerRef.current?.signal.aborted) return null;
+            // Check if pre-calculated face descriptor exists in the database
             if (
               student.faceDescriptor &&
               Array.isArray(student.faceDescriptor) &&
@@ -387,7 +389,7 @@ export default function FaceRecognizer({ authUser }) {
       .withFaceLandmarks()
       .withFaceDescriptors();
 
-    if (!isMounted.current || abortControllerRef.current?.signal.aborted || !canvasRef.current) return;
+    if (!isMounted.current || abortControllerRef.current?.signal.aborted) return;
 
     const resizedDetections = faceapi.resizeResults(detections, displaySize);
     const ctx = canvas.getContext("2d");
@@ -490,6 +492,8 @@ export default function FaceRecognizer({ authUser }) {
     }
 
     if (isMounted.current && !finished && !abortControllerRef.current?.signal.aborted) {
+      // Loop execution only if not finished
+      // To prevent race conditions, check if we just transitioned to AUTHENTICATED
       setLivenessState((currentLiveness) => {
         if (currentLiveness !== "AUTHENTICATED" && isMounted.current) {
           animationFrameId.current = requestAnimationFrame(processVideo);
