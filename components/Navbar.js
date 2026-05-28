@@ -10,6 +10,7 @@ import { useNotifications } from "@/hooks/useNotifications";
 import { useTheme } from "next-themes";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
+import ThemeToggle from "@/components/ThemeToggle";
 
 import {
   Menu,
@@ -329,20 +330,9 @@ export function Navbar() {
               </motion.button>
 
               {/* Theme Toggle */}
-              {mounted && (
-                <motion.button
-                  whileHover={{ scale: 1.08, rotate: isDark ? 20 : -20 }}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => setTheme(isDark ? "light" : "dark")}
-                  className={iconBtn}
-                  aria-label="Toggle theme"
-                >
-                  {isDark
-                    ? <Sun className="h-4 w-4 text-amber-400" />
-                    : <Moon className="h-4 w-4" />
-                  }
-                </motion.button>
-              )}
+              <div className="flex items-center">
+                <ThemeToggle />
+              </div>
 
               {/* Auth Area */}
               {loading ? (
@@ -688,16 +678,7 @@ export function Navbar() {
 
               {/* Footer: theme + search + shortcuts */}
               <div className="flex items-center justify-between pt-1">
-                {mounted && (
-                  <motion.button
-                    whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
-                    onClick={() => setTheme(isDark ? "light" : "dark")}
-                    className="p-2 rounded-xl text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-white/8 transition-colors"
-                    aria-label="Toggle theme"
-                  >
-                    {isDark ? <Sun className="h-4 w-4 text-amber-400" /> : <Moon className="h-4 w-4" />}
-                  </motion.button>
-                )}
+                <ThemeToggle />
                 <div className="flex flex-col gap-3 mt-auto pt-4 border-t border-zinc-100 dark:border-zinc-900">
 
                   <button
