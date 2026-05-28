@@ -259,6 +259,7 @@ const TeacherDashboard = () => {
         }
       } catch (error) {
         console.error("Error fetching schedule, falling back to mock:", error);
+        toast.error("Could not load your schedule. Showing sample data instead.");
       }
       
       // Fallback Mock Schedule
