@@ -5,6 +5,7 @@ import { Navbar } from "@/components/Navbar";
 import ComplaintsTable from "@/components/ComplaintsTable";
 import ComplaintForm from "@/components/ComplaintForm";
 import CardListSkeleton from "@/components/ui/CardListSkeleton";
+import toast from "react-hot-toast";
 
 export default function ComplaintsPage() {
   const [showForm, setShowForm] = useState(false);
@@ -67,6 +68,7 @@ export default function ComplaintsPage() {
     ]);
 
     setShowForm(false);
+    toast.success("Complaint submitted successfully!");
   };
 
   return (

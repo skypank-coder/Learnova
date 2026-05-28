@@ -17,10 +17,14 @@ export async function assertApiError(response, expectedStatus, expectedError = n
   }
   
   if (expectedError !== null) {
+    const errorBody = body.error ?? body;
+
     if (typeof expectedError === 'object') {
-      expect(body.error || body).toEqual(expectedError);
+      expect(errorBody).toEqual(expectedError);
+    } else if (typeof errorBody === 'object' && errorBody !== null) {
+      expect(errorBody.message).toBe(expectedError);
     } else {
-      expect(body.error).toBe(expectedError);
+      expect(errorBody).toBe(expectedError);
     }
   }
   

@@ -1,12 +1,12 @@
 import { GET, PATCH } from "./route";
-import { authenticateRequest, parseJSON } from "@/lib/error-handler";
-import { checkRateLimit } from "@/lib/rateLimit";
-import clientPromise from "@/lib/mongodb";
-import { assertApiSuccess } from "@/testUtils/assertApiSuccess";
-import { assertApiError } from "@/testUtils/assertApiError";
+import { authenticateRequest, parseJSON } from "../../../lib/error-handler";
+import { checkRateLimit } from "../../../lib/rateLimit";
+import clientPromise from "../../../lib/mongodb";
+import { assertApiSuccess } from "../../../testUtils/assertApiSuccess";
+import { assertApiError } from "../../../testUtils/assertApiError";
 
-jest.mock("@/lib/error-handler", () => {
-  const { AppError } = require("@/lib/errors");
+jest.mock("../../../lib/error-handler", () => {
+  const { AppError } = require("../../../lib/errors");
   return {
     authenticateRequest: jest.fn(),
     withErrorHandler: (handler) => {
@@ -32,11 +32,11 @@ jest.mock("@/lib/error-handler", () => {
   };
 });
 
-jest.mock("@/lib/rateLimit", () => ({
+jest.mock("../../../lib/rateLimit", () => ({
   checkRateLimit: jest.fn().mockResolvedValue({ allowed: true, remaining: 9 }),
 }));
 
-jest.mock("@/lib/mongodb", () => {
+jest.mock("../../../lib/mongodb", () => {
   const mockCursor = {
     sort: jest.fn().mockReturnThis(),
     limit: jest.fn().mockReturnThis(),
@@ -76,8 +76,8 @@ describe("notifications route", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     checkRateLimit.mockResolvedValue({ allowed: true, remaining: 9 });
-    mockCollection = require("@/lib/mongodb")._mockCollection;
-    mockCursor = require("@/lib/mongodb")._mockCursor;
+    mockCollection = require("../../../lib/mongodb")._mockCollection;
+    mockCursor = require("../../../lib/mongodb")._mockCursor;
   });
 
   const createMockRequest = (url = "http://localhost/api/notifications", headers = {}) => {
@@ -102,7 +102,7 @@ describe("notifications route", () => {
       const response = await GET(createMockRequest("http://localhost/api/notifications?userId=user-123"));
 
       const body = await assertApiSuccess(response, 200);
-      expect(body.notifications).toEqual([
+      expect(body.data.notifications).toEqual([
         { _id: "notif-1", userId: "user-123", message: "Notice posted", read: false },
       ]);
 
@@ -117,7 +117,7 @@ describe("notifications route", () => {
       const response = await GET(createMockRequest("http://localhost/api/notifications"));
 
       const body = await assertApiSuccess(response, 200);
-      expect(body.notifications).toEqual([]);
+      expect(body.data.notifications).toEqual([]);
       expect(mockCollection.find).not.toHaveBeenCalled();
     });
 
@@ -130,7 +130,7 @@ describe("notifications route", () => {
     });
 
     test("rejects request with 401 Unauthorized if token is missing or invalid", async () => {
-      const { UnauthorizedError } = require("@/lib/errors");
+      const { UnauthorizedError } = require("../../../lib/errors");
       authenticateRequest.mockRejectedValue(new UnauthorizedError("Unauthorized"));
 
       const response = await GET(createMockRequest("http://localhost/api/notifications?userId=user-123"));
@@ -144,9 +144,7 @@ describe("notifications route", () => {
 
       const response = await GET(createMockRequest("http://localhost/api/notifications?userId=user-123"));
 
-      expect(response.status).toBe(429);
-      const body = await response.json();
-      expect(body.error).toBe("Too many requests. Please slow down.");
+      await assertApiError(response, 429, "Too many requests. Please slow down.");
     });
   });
 
@@ -172,9 +170,7 @@ describe("notifications route", () => {
 
       const response = await PATCH(createMockRequest());
 
-      expect(response.status).toBe(200);
-      const body = await response.json();
-      expect(body.success).toBe(false);
+      await assertApiError(response, 400, "userId is required");
       expect(mockCollection.updateMany).not.toHaveBeenCalled();
     });
 

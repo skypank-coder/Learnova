@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Clock, Star, ArrowRight, BookOpen, Search, RotateCcw, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import toast from "react-hot-toast";
 
 /**
  * CourseLibrary Component
@@ -49,6 +50,7 @@ export default function CourseLibrary({
       }
     } catch (error) {
       console.error("Failed to load more courses:", error);
+      toast.error("Failed to load more courses. Please check your connection.");
     } finally {
       setIsLoading(false);
     }
